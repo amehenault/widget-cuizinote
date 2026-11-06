@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nom_app">Widget Cuizinote</string>
+    <string name="nom_widget">Calories Cuizinote</string>
+    <string name="description_widget">Calories mangées aujourd\'hui sur votre objectif</string>
+    <string name="description_anneau">Progression des calories de la journée</string>
+    <string name="cal">Cal</string>
+    <string name="explication">Dans Cuizinote : Paramètres, Widget Android, Créer la clé du widget. Copiez la clé et collez-la ici.</string>
+    <string name="indice_cle">Clé du widget (czw_…)</string>
+    <string name="enregistrer">Enregistrer</string>
+    <string name="cle_invalide">Cette clé ne semble pas valide. Elle doit commencer par czw_.</string>
+    <string name="cle_enregistree">Clé enregistrée. Le widget se met à jour.</string>
+    <string name="cle_active">Clé configurée. Le widget se met à jour toutes les 30 minutes.</string>
+    <string name="aucune_cle">Aucune clé configurée pour le moment.</string>
+    <string name="ajouter_widget">Pour ajouter le widget : appui long sur l\'écran d\'accueil, Widgets, Widget Cuizinote, puis glissez-le où vous voulez.</string>
+    <string name="ouvrir_cuizinote">Ouvrir Cuizinote</string>
+</resources>

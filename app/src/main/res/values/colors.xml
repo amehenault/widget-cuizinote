@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="peche">#FDC79C</color>
+    <color name="corail">#F2735C</color>
+    <color name="framboise">#A63A58</color>
+    <color name="prune">#4F2150</color>
+    <color name="foret">#4B5F49</color>
+    <color name="sauge">#B6CFA6</color>
+    <color name="creme">#FFF1E3</color>
+    <color name="texte">#2B1B2C</color>
+</resources>
