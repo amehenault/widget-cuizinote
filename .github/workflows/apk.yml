@@ -19,18 +19,29 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Même clé de signature d'une version à l'autre, pour pouvoir mettre à jour sans désinstaller.
-      - name: Clé de signature
+      # Même clé de signature d'une version à l'autre : permet d'installer les mises à jour par-dessus.
+      - name: Récupérer la clé de signature
         uses: actions/cache@v4
         with:
-          path: ~/.android/debug.keystore
-          key: cle-signature-widget-cuizinote
+          path: signature/cuizinote.jks
+          key: signature-widget-cuizinote-v2
+
+      - name: Créer la clé de signature (première fois seulement)
+        run: |
+          if [ ! -f signature/cuizinote.jks ]; then
+            mkdir -p signature
+            keytool -genkeypair -keystore signature/cuizinote.jks -alias cuizinote \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass cuizinote -keypass cuizinote -dname "CN=Widget Cuizinote"
+          fi
 
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
 
       - name: Compiler
+        env:
+          CLE_SIGNATURE: ${{ github.workspace }}/signature/cuizinote.jks
         run: gradle assembleRelease --no-daemon --stacktrace
 
       - name: Renommer
