@@ -46,7 +46,7 @@ class MainActivity : Activity() {
             Reglages.enregistrerCle(this, cle)
             champCle.setText("")
             Rafraichissement.planifier(this)
-            Rafraichissement.maintenant(this)
+            lireMaintenant()
             statut.text = getString(R.string.cle_enregistree)
         }
 
@@ -64,8 +64,14 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        if (!Reglages.cle(this).isNullOrBlank()) Rafraichissement.maintenant(this)
+        if (!Reglages.cle(this).isNullOrBlank()) lireMaintenant()
         minuterie.post(actualiser)
+    }
+
+    /** Lecture directe (sans la file de tâches d'Android, que Samsung peut retarder). */
+    private fun lireMaintenant() {
+        val contexte = applicationContext
+        Thread { Rafraichissement.recuperer(contexte) }.start()
     }
 
     override fun onPause() {
