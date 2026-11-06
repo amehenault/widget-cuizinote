@@ -12,7 +12,7 @@ object Reglages {
     fun cle(contexte: Context): String? = prefs(contexte).getString("cle", null)
 
     fun enregistrerCle(contexte: Context, cle: String) {
-        prefs(contexte).edit().putString("cle", cle).remove("erreur").apply()
+        prefs(contexte).edit().putString("cle", cle).remove("erreur").remove("mis_a_jour").apply()
     }
 
     fun enregistrerTotal(contexte: Context, jour: String, kcal: Int, objectif: Int?) {
@@ -20,6 +20,7 @@ object Reglages {
             .putString("jour", jour)
             .putInt("kcal", kcal)
             .putInt("objectif", objectif ?: 0)
+            .putLong("mis_a_jour", System.currentTimeMillis())
             .remove("erreur")
             .apply()
     }
@@ -28,10 +29,13 @@ object Reglages {
         prefs(contexte).edit().putString("erreur", message).apply()
     }
 
-    data class Etat(val jour: String?, val kcal: Int, val objectif: Int, val erreur: String?)
+    data class Etat(val jour: String?, val kcal: Int, val objectif: Int, val erreur: String?, val misAJour: Long)
 
     fun etat(contexte: Context): Etat {
         val p = prefs(contexte)
-        return Etat(p.getString("jour", null), p.getInt("kcal", 0), p.getInt("objectif", 0), p.getString("erreur", null))
+        return Etat(
+            p.getString("jour", null), p.getInt("kcal", 0), p.getInt("objectif", 0),
+            p.getString("erreur", null), p.getLong("mis_a_jour", 0L)
+        )
     }
 }

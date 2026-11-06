@@ -43,7 +43,7 @@ class Rafraichissement(contexte: Context, parametres: WorkerParameters) : Corout
                     val objectif = if (json.isNull("objectif")) null else json.optInt("objectif")
                     Reglages.enregistrerTotal(contexte, jour, json.optInt("kcal", 0), objectif)
                 }
-                401 -> Reglages.enregistrerErreur(contexte, "Clé refusée")
+                401 -> Reglages.enregistrerErreur(contexte, "Clé refusée : créez une nouvelle clé dans Cuizinote")
                 else -> Reglages.enregistrerErreur(contexte, "Cuizinote indisponible")
             }
         } catch (e: Exception) {

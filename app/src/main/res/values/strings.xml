@@ -9,7 +9,8 @@
     <string name="indice_cle">Clé du widget (czw_…)</string>
     <string name="enregistrer">Enregistrer</string>
     <string name="cle_invalide">Cette clé ne semble pas valide. Elle doit commencer par czw_.</string>
-    <string name="cle_enregistree">Clé enregistrée. Le widget se met à jour.</string>
+    <string name="cle_enregistree">Clé enregistrée. Connexion à Cuizinote…</string>
+    <string name="statut_ok">Connecté. Aujourd\'hui : %1$s (mis à jour à %2$s).</string>
     <string name="cle_active">Clé configurée. Le widget se met à jour toutes les 30 minutes.</string>
     <string name="aucune_cle">Aucune clé configurée pour le moment.</string>
     <string name="ajouter_widget">Pour ajouter le widget : appui long sur l\'écran d\'accueil, Widgets, Widget Cuizinote, puis glissez-le où vous voulez.</string>
