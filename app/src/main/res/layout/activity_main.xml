@@ -65,6 +65,23 @@
             android:textColor="@color/texte"
             android:textSize="14sp" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/explication_batterie"
+            android:textColor="@color/texte"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/bouton_batterie"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/foret"
+            android:text="@string/batterie"
+            android:textColor="@color/creme" />
+
         <Button
             android:id="@+id/bouton_ouvrir"
             android:layout_width="match_parent"

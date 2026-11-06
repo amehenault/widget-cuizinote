@@ -11,19 +11,39 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
-import android.net.Uri
 import android.widget.RemoteViews
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.util.Date
 import java.util.Locale
 
-/** Widget d'écran d'accueil : anneau des calories mangées aujourd'hui sur l'objectif. */
+/** Widget d'écran d'accueil : anneau des calories mangées aujourd'hui sur l'objectif. Toucher = mettre à jour. */
 class CaloriesWidget : AppWidgetProvider() {
 
     override fun onUpdate(contexte: Context, gestionnaire: AppWidgetManager, ids: IntArray) {
-        dessiner(contexte, gestionnaire, ids)
+        dessiner(contexte, gestionnaire, ids, enCours = false)
         Rafraichissement.planifier(contexte)
         Rafraichissement.maintenant(contexte)
+    }
+
+    override fun onReceive(contexte: Context, intention: Intent) {
+        super.onReceive(contexte, intention)
+        if (intention.action == ACTION_ACTUALISER) {
+            val gestionnaire = AppWidgetManager.getInstance(contexte)
+            val ids = gestionnaire.getAppWidgetIds(ComponentName(contexte, CaloriesWidget::class.java))
+            dessiner(contexte, gestionnaire, ids, enCours = true)
+            Rafraichissement.planifier(contexte)
+            // Lecture immédiate, sans attendre la file de tâches d'Android (souvent retardée par Samsung).
+            val enAttente = goAsync()
+            Thread {
+                try {
+                    Rafraichissement.recuperer(contexte.applicationContext)
+                } finally {
+                    enAttente.finish()
+                }
+            }.start()
+        }
     }
 
     override fun onEnabled(contexte: Context) {
@@ -35,6 +55,8 @@ class CaloriesWidget : AppWidgetProvider() {
     }
 
     companion object {
+        const val ACTION_ACTUALISER = "ca.cuizinote.widget.ACTUALISER"
+
         // Couleurs de la palette Cuizinote
         private val COULEUR_PISTE = Color.parseColor("#6E3E70")
         private val COULEUR_PROGRES = Color.parseColor("#FDC79C")
@@ -43,11 +65,13 @@ class CaloriesWidget : AppWidgetProvider() {
         fun mettreAJourTous(contexte: Context) {
             val gestionnaire = AppWidgetManager.getInstance(contexte)
             val ids = gestionnaire.getAppWidgetIds(ComponentName(contexte, CaloriesWidget::class.java))
-            if (ids.isNotEmpty()) dessiner(contexte, gestionnaire, ids)
+            if (ids.isNotEmpty()) dessiner(contexte, gestionnaire, ids, enCours = false)
         }
 
-        private fun dessiner(contexte: Context, gestionnaire: AppWidgetManager, ids: IntArray) {
+        private fun dessiner(contexte: Context, gestionnaire: AppWidgetManager, ids: IntArray, enCours: Boolean) {
+            if (ids.isEmpty()) return
             val etat = Reglages.etat(contexte)
+            val sansCle = Reglages.cle(contexte).isNullOrBlank()
             val aujourdhui = LocalDate.now().toString()
             // Si le dernier total date d'hier, on repart de zéro en attendant la mise à jour.
             val kcal = if (etat.jour == aujourdhui) etat.kcal else 0
@@ -59,23 +83,36 @@ class CaloriesWidget : AppWidgetProvider() {
             vues.setTextViewText(
                 R.id.objectif,
                 when {
-                    Reglages.cle(contexte).isNullOrBlank() -> "Ouvrir pour configurer"
+                    sansCle -> "Ouvrir pour configurer"
                     etat.erreur != null -> etat.erreur
                     objectif > 0 -> "/${format.format(objectif)} Cal"
                     else -> "Cal mangées"
                 }
             )
+            vues.setTextViewText(
+                R.id.heure,
+                when {
+                    sansCle -> ""
+                    enCours -> "Mise à jour…"
+                    etat.misAJour > 0 -> SimpleDateFormat("HH 'h' mm", Locale.CANADA_FRENCH).format(Date(etat.misAJour))
+                    else -> ""
+                }
+            )
             vues.setImageViewBitmap(R.id.anneau, anneau(kcal, objectif))
 
-            // Toucher le widget ouvre Cuizinote ; sans clé, ouvre la configuration.
-            val intention = if (Reglages.cle(contexte).isNullOrBlank()) {
-                Intent(contexte, MainActivity::class.java)
+            // Toucher : mise à jour immédiate ; sans clé, ouvre la configuration.
+            val attente = if (sansCle) {
+                PendingIntent.getActivity(
+                    contexte, 0, Intent(contexte, MainActivity::class.java),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
             } else {
-                Intent(Intent.ACTION_VIEW, Uri.parse(Reglages.ADRESSE))
+                PendingIntent.getBroadcast(
+                    contexte, 1,
+                    Intent(contexte, CaloriesWidget::class.java).setAction(ACTION_ACTUALISER),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
             }
-            val attente = PendingIntent.getActivity(
-                contexte, 0, intention, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
             vues.setOnClickPendingIntent(R.id.racine, attente)
 
             ids.forEach { gestionnaire.updateAppWidget(it, vues) }

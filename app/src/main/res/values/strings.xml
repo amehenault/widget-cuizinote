@@ -15,4 +15,6 @@
     <string name="aucune_cle">Aucune clé configurée pour le moment.</string>
     <string name="ajouter_widget">Pour ajouter le widget : appui long sur l\'écran d\'accueil, Widgets, Widget Cuizinote, puis glissez-le où vous voulez.</string>
     <string name="ouvrir_cuizinote">Ouvrir Cuizinote</string>
+    <string name="explication_batterie">Touchez le widget pour le mettre à jour tout de suite. Pour qu\'il se mette aussi à jour seul toutes les 15 minutes, retirez la restriction de batterie : touchez le bouton ci-dessous, puis Batterie, puis « Sans restriction ».</string>
+    <string name="batterie">Réglages de batterie</string>
 </resources>

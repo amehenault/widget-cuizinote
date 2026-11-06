@@ -4,8 +4,8 @@ Widget Android d'écran d'accueil qui affiche les calories mangées aujourd'hui 
 lues depuis [Cuizinote](https://cuizinote.vercel.app).
 
 - Anneau de progression aux couleurs de Cuizinote (corail si l'objectif est dépassé)
-- Mise à jour toutes les 30 minutes, et à l'ouverture de l'application
-- Toucher le widget ouvre Cuizinote
+- Mise à jour automatique toutes les 15 minutes (retirer la restriction de batterie sur Samsung)
+- Toucher le widget le met à jour immédiatement (heure de la dernière mise à jour affichée)
 - Accès en lecture seule, par une clé personnelle créée dans Cuizinote (Paramètres, Widget Android)
 
 ## Installation

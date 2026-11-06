@@ -22,47 +22,51 @@ import java.util.concurrent.TimeUnit
 class Rafraichissement(contexte: Context, parametres: WorkerParameters) : CoroutineWorker(contexte, parametres) {
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        val contexte = applicationContext
-        val cle = Reglages.cle(contexte)
-        if (cle.isNullOrBlank()) {
-            CaloriesWidget.mettreAJourTous(contexte)
-            return@withContext Result.success()
-        }
-        val jour = LocalDate.now().toString()
-        var connexion: HttpURLConnection? = null
-        try {
-            connexion = (URL("${Reglages.ADRESSE}/api/widget/calories?jour=$jour").openConnection() as HttpURLConnection).apply {
-                connectTimeout = 15000
-                readTimeout = 15000
-                setRequestProperty("Authorization", "Bearer $cle")
-                setRequestProperty("Accept", "application/json")
-            }
-            when (connexion.responseCode) {
-                200 -> {
-                    val json = JSONObject(connexion.inputStream.bufferedReader().use { it.readText() })
-                    val objectif = if (json.isNull("objectif")) null else json.optInt("objectif")
-                    Reglages.enregistrerTotal(contexte, jour, json.optInt("kcal", 0), objectif)
-                }
-                401 -> Reglages.enregistrerErreur(contexte, "Clé refusée : créez une nouvelle clé dans Cuizinote")
-                else -> Reglages.enregistrerErreur(contexte, "Cuizinote indisponible")
-            }
-        } catch (e: Exception) {
-            // Pas de réseau : on garde le dernier total connu.
-        } finally {
-            connexion?.disconnect()
-        }
-        CaloriesWidget.mettreAJourTous(contexte)
+        recuperer(applicationContext)
         Result.success()
     }
 
     companion object {
         private val reseau = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
-        /** Mise à jour automatique toutes les 30 minutes. */
+        /** Lecture bloquante (à appeler hors du fil principal) : total du jour, puis redessin des widgets. */
+        fun recuperer(contexte: Context) {
+            val cle = Reglages.cle(contexte)
+            if (cle.isNullOrBlank()) {
+                CaloriesWidget.mettreAJourTous(contexte)
+                return
+            }
+            val jour = LocalDate.now().toString()
+            var connexion: HttpURLConnection? = null
+            try {
+                connexion = (URL("${Reglages.ADRESSE}/api/widget/calories?jour=$jour").openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 15000
+                    readTimeout = 15000
+                    setRequestProperty("Authorization", "Bearer $cle")
+                    setRequestProperty("Accept", "application/json")
+                }
+                when (connexion.responseCode) {
+                    200 -> {
+                        val json = JSONObject(connexion.inputStream.bufferedReader().use { it.readText() })
+                        val objectif = if (json.isNull("objectif")) null else json.optInt("objectif")
+                        Reglages.enregistrerTotal(contexte, jour, json.optInt("kcal", 0), objectif)
+                    }
+                    401 -> Reglages.enregistrerErreur(contexte, "Clé refusée : créez une nouvelle clé dans Cuizinote")
+                    else -> Reglages.enregistrerErreur(contexte, "Cuizinote indisponible")
+                }
+            } catch (e: Exception) {
+                // Pas de réseau : on garde le dernier total connu.
+            } finally {
+                connexion?.disconnect()
+            }
+            CaloriesWidget.mettreAJourTous(contexte)
+        }
+
+        /** Mise à jour automatique toutes les 15 minutes (minimum permis par Android). */
         fun planifier(contexte: Context) {
-            val requete = PeriodicWorkRequestBuilder<Rafraichissement>(30, TimeUnit.MINUTES).setConstraints(reseau).build()
+            val requete = PeriodicWorkRequestBuilder<Rafraichissement>(15, TimeUnit.MINUTES).setConstraints(reseau).build()
             WorkManager.getInstance(contexte)
-                .enqueueUniquePeriodicWork("calories", ExistingPeriodicWorkPolicy.KEEP, requete)
+                .enqueueUniquePeriodicWork("calories", ExistingPeriodicWorkPolicy.UPDATE, requete)
         }
 
         /** Mise à jour immédiate (ouverture de l'application, ajout du widget, toucher le bouton). */

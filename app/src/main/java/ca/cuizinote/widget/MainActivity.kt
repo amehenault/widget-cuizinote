@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -47,6 +48,13 @@ class MainActivity : Activity() {
             Rafraichissement.planifier(this)
             Rafraichissement.maintenant(this)
             statut.text = getString(R.string.cle_enregistree)
+        }
+
+        // Samsung met les applications en veille : la page de l'application permet de choisir « Sans restriction ».
+        findViewById<Button>(R.id.bouton_batterie).setOnClickListener {
+            startActivity(
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null))
+            )
         }
 
         findViewById<Button>(R.id.bouton_ouvrir).setOnClickListener {
